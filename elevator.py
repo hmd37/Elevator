@@ -47,7 +47,7 @@ class Elevator:
                 elif self.direction == "down":
                     self.current_floor -= 1
 
-                print(f"Moving {self.direction}... Current floor: {self.current_floor}")
+                self.display_elevator_status(target_floor)
 
                 self._handle_intermediate_requests()
 
@@ -57,6 +57,22 @@ class Elevator:
 
         self.direction = "idle"
         print(f"Elevator is idle at floor {self.current_floor}.")
+
+    def display_elevator_status(self, target_floor):
+        floors = range(self.total_floors, 0, -1)  # Top to bottom
+        """Displays the elevator shaft and its status in the terminal."""
+        print("\033c", end="")  # Clear the terminal for dynamic updates
+        print(f"Elevator Status: Moving {self.direction}, Target: Floor {target_floor}")
+        print(f"Current Floor: {self.current_floor}\n")
+
+        for floor in floors:
+            if floor == self.current_floor:
+                print(f"Floor {floor:2} | [E]  <-- Elevator here")
+            elif floor == target_floor:
+                print(f"Floor {floor:2} | [T]  <-- Target floor")
+            else:
+                print(f"Floor {floor:2} |")
+        print("-" * 20)
 
     def _handle_intermediate_requests(self):
         intermediate_requests = []
