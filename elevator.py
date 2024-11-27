@@ -58,34 +58,47 @@ class Elevator:
         self.direction = "idle"
         print(f"Elevator is idle at floor {self.current_floor}.")
 
-    def display_elevator_status(self, target_floor):
-        floors = range(self.total_floors, 0, -1)  # Top to bottom
-        """Displays the elevator shaft and its status in the terminal."""
-        print("\033c", end="")  # Clear the terminal for dynamic updates
-        print(f"Elevator Status: Moving {self.direction}, Target: Floor {target_floor}")
-        print(f"Current Floor: {self.current_floor}\n")
-
-        for floor in floors:
-            if floor == self.current_floor:
-                print(f"Floor {floor:2} | [E]  <-- Elevator here")
-            elif floor == target_floor:
-                print(f"Floor {floor:2} | [T]  <-- Target floor")
-            else:
-                print(f"Floor {floor:2} |")
+    def display_elevator_status(self, target_floor: int):
+        print("\033c", end="")  # Clear the terminal
+        print(self._generate_status_message(target_floor))
+        print(self._generate_elevator_shaft(target_floor))
         print("-" * 20)
+
+    def _generate_status_message(self, target_floor: int) -> str:
+        return (
+            f"Elevator Status: Moving {self.direction}, Target: Floor {target_floor}\n"
+            f"Current Floor: {self.current_floor}\n"
+        )
+
+    def _generate_elevator_shaft(self, target_floor: int) -> str:
+        shaft = ""
+
+        for floor in range(self.total_floors, 0, -1):
+            if floor == self.current_floor:
+                shaft += f"Floor {floor:2} | [E]  <-- Elevator here\n"
+            elif floor == target_floor:
+                shaft += f"Floor {floor:2} | [T]  <-- Target floor\n"
+            else:
+                shaft += f"Floor {floor:2} |\n"
+                
+        return shaft
 
     def _handle_intermediate_requests(self):
         intermediate_requests = []
+
         while not self.requests.empty():
-            _, intermediate_floor = self.requests.get()
+            priority, intermediate_floor = self.requests.get()
+
             if intermediate_floor == self.current_floor:
                 print(f"Stopping at floor {self.current_floor} for an intermediate request.")
                 print("Doors opening...")
                 time.sleep(2)  # Simulate door open/close
                 print("Doors closed.")
             else:
-                intermediate_requests.append((abs(intermediate_floor - self.current_floor), intermediate_floor))
+                intermediate_requests.append((priority, intermediate_floor))
 
-        # Re-add remaining requests to the queue
-        for request in intermediate_requests:
+        self._re_add_requests(intermediate_requests)
+
+    def _re_add_requests(self, requests):
+        for request in requests:
             self.requests.put(request)
